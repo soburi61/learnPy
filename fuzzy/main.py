@@ -7,9 +7,12 @@ import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 import datetime
 import matplotlib.pyplot as plt
+import os
+
 #------定義------
 # 重要度、締切日（日付）、タスクの軽さを入力変数とします
 
+tasks=[]
 def calculate_priority(name, importance_value, deadline_date, lightness_value):
     # 重要度、締切日（日付）、タスクの軽さを入力変数とします
     importance = ctrl.Antecedent(np.arange(0, 11, 1), 'importance')
@@ -80,17 +83,77 @@ def sort_tasks(task_list):
 
 
 # タスクのリストを定義します
-tasks = [
-    {"name": "タスクA", "importance": 8, "deadline_date": datetime.datetime(2023, 10, 15), "lightness": 7},
-    {"name": "タスクB", "importance": 5, "deadline_date": datetime.datetime(2023, 10, 10), "lightness": 5},
-    {"name": "タスクC", "importance": 7, "deadline_date": datetime.datetime(2023, 10, 5), "lightness": 9},
-    {"name": "タスクD", "importance": 9, "deadline_date": datetime.datetime(2023, 10, 20), "lightness": 3},
-]
+# tasks = [
+#     {"name": "タスクA", "importance": 8, "deadline_date": datetime.datetime(2023, 10, 15), "lightness": 7},
+#     {"name": "タスクB", "importance": 5, "deadline_date": datetime.datetime(2023, 10, 10), "lightness": 5},
+#     {"name": "タスクC", "importance": 7, "deadline_date": datetime.datetime(2023, 10, 5), "lightness": 9},
+#     {"name": "タスクD", "importance": 9, "deadline_date": datetime.datetime(2023, 10, 20), "lightness": 3},
+# ]
 
-# タスクを優先度順に並び替えて結果を取得します
-sorted_tasks = sort_tasks(tasks)
+# ファイル名を指定します
+task_file = "tasks.txt"
 
-# 優先度順に並び替えたタスクを表示します
-for i, task in enumerate(sorted_tasks, start=1):
-    print(f"タスク{i}: 名前({task['name']}), 重要度({task['importance']}), 締切日({task['deadline_date']}), 軽さ({task['lightness']})")
+# ファイルが存在する場合、タスクを読み込みます
+if os.path.exists(task_file):
+    with open(task_file, "r") as file:
+        lines = file.readlines()
+        for line in lines:
+            task_data = line.strip().split(",")
+            if len(task_data) == 4:
+                name, importance, deadline_date, lightness = task_data
+                deadline_date = datetime.datetime.strptime(deadline_date, "%Y-%m-%d %H:%M:%S")
+                importance = int(importance)
+                lightness = int(lightness)
+                task = {
+                    "name": name,
+                    "importance": importance,
+                    "deadline_date": deadline_date,
+                    "lightness": lightness
+                }
+                tasks.append(task)
 
+if __name__ == "__main__":
+    while True:
+        print("新しいタスクを追加しますか？(y/n):",end="")
+        choice = input().lower()
+        
+        if choice != "y":
+            break
+        
+        # タスクの情報をユーザーから入力
+        name = input("タスクの名前: ")
+        importance = int(input("重要度 (0から10の範囲): "))
+        year = int(input("締切日の年 (例: 2023): "))
+        month = int(input("締切日の月 (1から12): "))
+        day = int(input("締切日の日 (1から31): "))
+        lightness = int(input("軽さ (0から10の範囲): "))
+
+        # タスクを辞書形式でリストに追加
+        task = {
+            "name": name,
+            "importance": importance,
+            "deadline_date": datetime.datetime(year, month, day),
+            "lightness": lightness
+        }
+        tasks.append(task)
+
+        # 追加したタスクの詳細を表示
+        print("新しいタスクを追加しました:")
+        print(f"タスク名: {task['name']}")
+        print(f"重要度: {task['importance']}")
+        print(f"締切日: {task['deadline_date']}")
+        print(f"軽さ: {task['lightness']}")
+        print("")
+
+    # タスクを優先度順に並び替えて結果を取得します
+    sorted_tasks = sort_tasks(tasks)
+
+    # 優先度順に並び替えたタスクを表示します
+    print("優先度順のタスクリスト:")
+    for i, task in enumerate(sorted_tasks, start=1):
+        print(f"タスク{i}: 名前({task['name']}), 重要度({task['importance']}), 締切日({task['deadline_date']}), 軽さ({task['lightness']})")
+
+    # タスクをファイルに書き込みます
+    with open(task_file, "w") as file:
+        for task in tasks:
+            file.write(f"{task['name']},{task['importance']},{task['deadline_date']},{task['lightness']}\n")
