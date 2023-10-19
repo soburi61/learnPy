@@ -5,11 +5,15 @@ import matplotlib.pyplot as plt
 import datetime
 import os
 
+tasks = []
+debag = True
+
 #--定義--
 # 重要度、締切日（日付）、タスクの軽さを入力変数とします
 importance = ctrl.Antecedent(np.arange(0, 11, 1), 'importance')
 lightness = ctrl.Antecedent(np.arange(0, 11, 1), 'lightness')
 deadline = ctrl.Antecedent(np.arange(0, 61, 1), 'deadline')
+
 
 # 優先度を出力変数とします
 priority = ctrl.Consequent(np.arange(0, 101, 1), 'priority')
@@ -30,18 +34,24 @@ deadline['far'] = fuzz.trimf(deadline.universe, [30, 60, 60])
 priority['low'] = fuzz.trimf(priority.universe, [0, 0, 50])
 priority['medium'] = fuzz.trimf(priority.universe, [0, 50, 100])
 priority['high'] = fuzz.trimf(priority.universe, [50, 100, 100])
+if debag:
+    importance.view()
+    plt.show()
+    lightness.view()
+    plt.show()
+    deadline.view()
+    plt.show()
 
-# ルールを定義します
+# ルールを定義
 rule1 = ctrl.Rule(importance['low'] | deadline['far'] | lightness['light'], priority['low'])
 rule2 = ctrl.Rule(importance['medium'] | deadline['medium'] | lightness['medium'], priority['medium'])
 rule3 = ctrl.Rule(importance['high'] | deadline['near'] | lightness['heavy'], priority['high'])
-
-# ルールを制御システムに追加します
+rule4 = ctrl.Rule(deadline['near'] & lightness['heavy'], priority['high'])
+# ルールを制御システムに追加
 priority_ctrl = ctrl.ControlSystem([rule1, rule2, rule3])
 #------
 
-tasks = []
-debag = True
+
 
 def calculate_priority(name, importance_value, lightness_value, deadline_date):
 
@@ -59,18 +69,17 @@ def calculate_priority(name, importance_value, lightness_value, deadline_date):
     if days_until_deadline >= 60:
         days_until_deadline = 60  # 2ヶ月以上は60に設定
     priority_eval.input['deadline'] = days_until_deadline
-
+    
     # 優先度を計算します
     priority_eval.compute()
-
+    
     if debag:
-        # プロットして結果を可視化する
         priority.view(sim=priority_eval)
-        # グラフにタイトルを追加します
+        # グラフにタイトルを追加
         plt.title(f"{name}({priority_eval.output['priority']})")
-        
-        # グラフを表示します
+        # グラフを表示
         plt.show()
+        
 
     # 優先度を返します
     return priority_eval.output['priority']
