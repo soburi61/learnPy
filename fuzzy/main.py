@@ -7,7 +7,7 @@ import os
 
 tasks = []
 debag = True
-
+plt.rcParams["figure.dpi"]=300
 #--定義--
 # 重要度、締切日（日付）、タスクの軽さを入力変数とします
 importance = ctrl.Antecedent(np.arange(0, 11, 1), 'importance')
@@ -51,7 +51,60 @@ rule4 = ctrl.Rule(deadline['near'] & lightness['heavy'], priority['high'])
 priority_ctrl = ctrl.ControlSystem([rule1, rule2, rule3])
 #------
 
+def show_membership_activation(importance_value, lightness_value, days_until_deadline):
+    # 各入力値に対するメンバーシップ関数の活性化レベルを計算
+    importance_activation_low = fuzz.interp_membership(importance.universe, importance['low'].mf, importance_value)
+    importance_activation_medium = fuzz.interp_membership(importance.universe, importance['medium'].mf, importance_value)
+    importance_activation_high = fuzz.interp_membership(importance.universe, importance['high'].mf, importance_value)
 
+    lightness_activation_light = fuzz.interp_membership(lightness.universe, lightness['light'].mf, lightness_value)
+    lightness_activation_medium = fuzz.interp_membership(lightness.universe, lightness['medium'].mf, lightness_value)
+    lightness_activation_heavy = fuzz.interp_membership(lightness.universe, lightness['heavy'].mf, lightness_value)
+
+    deadline_activation_near = fuzz.interp_membership(deadline.universe, deadline['near'].mf, days_until_deadline)
+    deadline_activation_medium = fuzz.interp_membership(deadline.universe, deadline['medium'].mf, days_until_deadline)
+    deadline_activation_far = fuzz.interp_membership(deadline.universe, deadline['far'].mf, days_until_deadline)
+
+    # ここで、必要に応じて活性化レベルを表示するコードを追加します
+    plt.axhline(y=importance_activation_low, color='b', linestyle='--')
+    # importance_activation = fuzz.interp_membership(importance, importance.universe, importance_value)
+    # lightness_activation = fuzz.interp_membership(lightness, lightness.universe, lightness_value)
+    # deadline_activation = fuzz.interp_membership(deadline, deadline.universe, days_until_deadline)
+
+    # # 重要度の活性化レベルを表示
+    # plt.figure()
+    # plt.plot(importance, importance['low'].mf, 'b', linewidth=1.5, label='Low')
+    # plt.plot(importance, importance['medium'].mf, 'g', linewidth=1.5, label='Medium')
+    # plt.plot(importance, importance['high'].mf, 'r', linewidth=1.5, label='High')
+    # plt.axvline(x=importance_value, color='k', linestyle='--')
+    # plt.title('Importance Activation')
+    # plt.xlabel('Importance')
+    # plt.ylabel('Membership')
+    # plt.legend()
+
+    # # タスクの軽さの活性化レベルを表示
+    # plt.figure()
+    # plt.plot(lightness, lightness['light'].mf, 'b', linewidth=1.5, label='Light')
+    # plt.plot(lightness, lightness['medium'].mf, 'g', linewidth=1.5, label='Medium')
+    # plt.plot(lightness, lightness['heavy'].mf, 'r', linewidth=1.5, label='Heavy')
+    # plt.axvline(x=lightness_value, color='k', linestyle='--')
+    # plt.title('Lightness Activation')
+    # plt.xlabel('Lightness')
+    # plt.ylabel('Membership')
+    # plt.legend()
+
+    # # 締切の活性化レベルを表示
+    # plt.figure()
+    # plt.plot(deadline, deadline['near'].mf, 'b', linewidth=1.5, label='Near')
+    # plt.plot(deadline, deadline['medium'].mf, 'g', linewidth=1.5, label='Medium')
+    # plt.plot(deadline, deadline['far'].mf, 'r', linewidth=1.5, label='Far')
+    # plt.axvline(x=days_until_deadline, color='k', linestyle='--')
+    # plt.title('Deadline Activation')
+    # plt.xlabel('Deadline')
+    # plt.ylabel('Membership')
+    # plt.legend()
+
+    # plt.show()
 
 def calculate_priority(name, importance_value, lightness_value, deadline_date):
 
@@ -79,6 +132,7 @@ def calculate_priority(name, importance_value, lightness_value, deadline_date):
         plt.title(f"{name}({priority_eval.output['priority']})")
         # グラフを表示
         plt.show()
+        #show_membership_activation(importance_value, lightness_value, days_until_deadline)
         
 
     # 優先度を返します
