@@ -11,7 +11,7 @@ plt.rcParams["figure.dpi"]=300
 #--定義--
 # 重要度、締切日（日付）、タスクの軽さを入力変数とします
 importance = ctrl.Antecedent(np.arange(0, 11, 1), 'importance')
-lightness = ctrl.Antecedent(np.arange(0, 11, 1), 'lightness')
+effort = ctrl.Antecedent(np.arange(0, 11, 1), 'effort')
 deadline = ctrl.Antecedent(np.arange(0, 61, 1), 'deadline')
 
 
@@ -23,9 +23,9 @@ importance['low'] = fuzz.trimf(importance.universe, [0, 0, 5])
 importance['medium'] = fuzz.trimf(importance.universe, [0, 5, 10])
 importance['high'] = fuzz.trimf(importance.universe, [5, 10, 10])
 
-lightness['light'] = fuzz.trimf(lightness.universe, [0, 0, 5])
-lightness['medium'] = fuzz.trimf(lightness.universe, [0, 5, 10])
-lightness['heavy'] = fuzz.trimf(lightness.universe, [5, 10, 10])
+effort['light'] = fuzz.trimf(effort.universe, [0, 0, 5])
+effort['medium'] = fuzz.trimf(effort.universe, [0, 5, 10])
+effort['heavy'] = fuzz.trimf(effort.universe, [5, 10, 10])
 
 deadline['near'] = fuzz.trimf(deadline.universe, [0, 0, 15])
 deadline['medium'] = fuzz.trimf(deadline.universe, [10, 30, 50])
@@ -37,29 +37,29 @@ priority['high'] = fuzz.trimf(priority.universe, [50, 100, 100])
 if debag:
     importance.view()
     plt.show()
-    lightness.view()
+    effort.view()
     plt.show()
     deadline.view()
     plt.show()
 
 # ルールを定義
-rule1 = ctrl.Rule(importance['low'] | deadline['far'] | lightness['light'], priority['low'])
-rule2 = ctrl.Rule(importance['medium'] | deadline['medium'] | lightness['medium'], priority['medium'])
-rule3 = ctrl.Rule(importance['high'] | deadline['near'] | lightness['heavy'], priority['high'])
-rule4 = ctrl.Rule(deadline['near'] & lightness['heavy'], priority['high'])
+rule1 = ctrl.Rule(importance['low'] | deadline['far'] | effort['light'], priority['low'])
+rule2 = ctrl.Rule(importance['medium'] | deadline['medium'] | effort['medium'], priority['medium'])
+rule3 = ctrl.Rule(importance['high'] | deadline['near'] | effort['heavy'], priority['high'])
+rule4 = ctrl.Rule(deadline['near'] & effort['heavy'], priority['high'])
 # ルールを制御システムに追加
 priority_ctrl = ctrl.ControlSystem([rule1, rule2, rule3])
 #------
 
-def show_membership_activation(importance_value, lightness_value, days_until_deadline):
+def show_membership_activation(importance_value, effort_value, days_until_deadline):
     # 各入力値に対するメンバーシップ関数の活性化レベルを計算
     importance_activation_low = fuzz.interp_membership(importance.universe, importance['low'].mf, importance_value)
     importance_activation_medium = fuzz.interp_membership(importance.universe, importance['medium'].mf, importance_value)
     importance_activation_high = fuzz.interp_membership(importance.universe, importance['high'].mf, importance_value)
 
-    lightness_activation_light = fuzz.interp_membership(lightness.universe, lightness['light'].mf, lightness_value)
-    lightness_activation_medium = fuzz.interp_membership(lightness.universe, lightness['medium'].mf, lightness_value)
-    lightness_activation_heavy = fuzz.interp_membership(lightness.universe, lightness['heavy'].mf, lightness_value)
+    effort_activation_light = fuzz.interp_membership(effort.universe, effort['light'].mf, effort_value)
+    effort_activation_medium = fuzz.interp_membership(effort.universe, effort['medium'].mf, effort_value)
+    effort_activation_heavy = fuzz.interp_membership(effort.universe, effort['heavy'].mf, effort_value)
 
     deadline_activation_near = fuzz.interp_membership(deadline.universe, deadline['near'].mf, days_until_deadline)
     deadline_activation_medium = fuzz.interp_membership(deadline.universe, deadline['medium'].mf, days_until_deadline)
@@ -68,7 +68,7 @@ def show_membership_activation(importance_value, lightness_value, days_until_dea
     # ここで、必要に応じて活性化レベルを表示するコードを追加します
     plt.axhline(y=importance_activation_low, color='b', linestyle='--')
     # importance_activation = fuzz.interp_membership(importance, importance.universe, importance_value)
-    # lightness_activation = fuzz.interp_membership(lightness, lightness.universe, lightness_value)
+    # effort_activation = fuzz.interp_membership(effort, effort.universe, effort_value)
     # deadline_activation = fuzz.interp_membership(deadline, deadline.universe, days_until_deadline)
 
     # # 重要度の活性化レベルを表示
@@ -84,10 +84,10 @@ def show_membership_activation(importance_value, lightness_value, days_until_dea
 
     # # タスクの軽さの活性化レベルを表示
     # plt.figure()
-    # plt.plot(lightness, lightness['light'].mf, 'b', linewidth=1.5, label='Light')
-    # plt.plot(lightness, lightness['medium'].mf, 'g', linewidth=1.5, label='Medium')
-    # plt.plot(lightness, lightness['heavy'].mf, 'r', linewidth=1.5, label='Heavy')
-    # plt.axvline(x=lightness_value, color='k', linestyle='--')
+    # plt.plot(effort, effort['light'].mf, 'b', linewidth=1.5, label='Light')
+    # plt.plot(effort, effort['medium'].mf, 'g', linewidth=1.5, label='Medium')
+    # plt.plot(effort, effort['heavy'].mf, 'r', linewidth=1.5, label='Heavy')
+    # plt.axvline(x=effort_value, color='k', linestyle='--')
     # plt.title('Lightness Activation')
     # plt.xlabel('Lightness')
     # plt.ylabel('Membership')
@@ -106,7 +106,7 @@ def show_membership_activation(importance_value, lightness_value, days_until_dea
 
     # plt.show()
 
-def calculate_priority(name, importance_value, lightness_value, deadline_date):
+def calculate_priority(name, importance_value, effort_value, deadline_date):
 
 
     # 制御システムをシミュレーションに接続します
@@ -114,7 +114,7 @@ def calculate_priority(name, importance_value, lightness_value, deadline_date):
 
     # 具体的な入力値を設定します
     priority_eval.input['importance'] = importance_value
-    priority_eval.input['lightness'] = lightness_value
+    priority_eval.input['effort'] = effort_value
     # 締切日を日付または時間形式から数値に変換し、適切な値を設定します
     current_date = datetime.datetime.now()  # 現在の日付を取得
     days_until_deadline = (deadline_date - current_date).days
@@ -132,7 +132,7 @@ def calculate_priority(name, importance_value, lightness_value, deadline_date):
         plt.title(f"{name}({priority_eval.output['priority']})")
         # グラフを表示
         plt.show()
-        #show_membership_activation(importance_value, lightness_value, days_until_deadline)
+        #show_membership_activation(importance_value, effort_value, days_until_deadline)
         
 
     # 優先度を返します
@@ -142,7 +142,7 @@ def calculate_priority(name, importance_value, lightness_value, deadline_date):
 # タスクを優先度順に並び替える関数を定義します
 def sort_tasks(task_list):
     # ラムダでソートを定義
-    task_list.sort(key=lambda x: calculate_priority(x["name"], x["importance"], x["lightness"],x["deadline_date"]), reverse=True)
+    task_list.sort(key=lambda x: calculate_priority(x["name"], x["importance"], x["effort"],x["deadline_date"]), reverse=True)
     return task_list
 
 # ファイル名を指定します
@@ -155,14 +155,14 @@ if os.path.exists(task_file):
         for line in lines:
             task_data = line.strip().split(",")
             if len(task_data) == 4:
-                name, importance, lightness, deadline_date = task_data
+                name, importance, effort, deadline_date = task_data
                 importance = int(importance)
-                lightness = int(lightness)
+                effort = int(effort)
                 deadline_date = datetime.datetime.strptime(deadline_date, "%Y-%m-%d %H:%M:%S")
                 task = {
                     "name": name,
                     "importance": importance,
-                    "lightness": lightness,
+                    "effort": effort,
                     "deadline_date": deadline_date
                 }
                 tasks.append(task)
@@ -177,7 +177,7 @@ if __name__ == "__main__":
         # ---------タスクの情報をユーザーから入力-------------
         name = input("タスクの名前: ")
         importance = int(input("重要度 (0から10の範囲): "))
-        lightness = int(input("軽さ (0から10の範囲): "))
+        effort = int(input("軽さ (0から10の範囲): "))
         current_year = datetime.datetime.now().year 
         if input("締切は今年ですか？(y/n): ").lower() == "y":
             year = current_year
@@ -200,7 +200,7 @@ if __name__ == "__main__":
         task = {
             "name": name,
             "importance": importance,
-            "lightness": lightness,
+            "effort": effort,
             "deadline_date": deadline_date
         }
         tasks.append(task)
@@ -210,7 +210,7 @@ if __name__ == "__main__":
         print("[新しいタスクを追加しました]:")
         print(f"  タスク名: {task['name']}")
         print(f"  重要度: {task['importance']}")
-        print(f"  軽さ: {task['lightness']}")
+        print(f"  軽さ: {task['effort']}")
         print(f"  締切日: {task['deadline_date']}")
         print("")
 
@@ -223,11 +223,11 @@ if __name__ == "__main__":
         print(f"タスク{i}:")
         print(f"  名前: {task['name']}")
         print(f"  重要度: {task['importance']}")
-        print(f"  軽さ: {task['lightness']}")
+        print(f"  軽さ: {task['effort']}")
         print(f"  締切日: {task['deadline_date'].strftime('%Y-%m-%d %I:%M %p')}")
         print("")
     
     # タスクをファイルに書き込みます（utf-8エンコードを指定）
     with open(task_file, "w", encoding='utf-8') as file:
         for task in tasks:
-            file.write(f"{task['name']},{task['importance']},{task['lightness']},{task['deadline_date']}\n")
+            file.write(f"{task['name']},{task['importance']},{task['effort']},{task['deadline_date']}\n")
