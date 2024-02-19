@@ -118,6 +118,7 @@ def calculate_priority(name, importance_value, effort_value, deadline_date):
     # 締切日を日付または時間形式から数値に変換し、適切な値を設定します
     current_date = datetime.datetime.now()  # 現在の日付を取得
     days_until_deadline = (deadline_date - current_date).days
+    print(days_until_deadline)
     # 2ヶ月以内の場合はスケーリング
     if days_until_deadline >= 60:
         days_until_deadline = 60  # 2ヶ月以上は60に設定
@@ -158,7 +159,7 @@ if os.path.exists(task_file):
                 name, importance, effort, deadline_date = task_data
                 importance = int(importance)
                 effort = int(effort)
-                deadline_date = datetime.datetime.strptime(deadline_date, "%Y-%m-%d %H:%M:%S")
+                deadline_date = datetime.datetime.strptime(deadline_date, "%Y-%m-%d")
                 task = {
                     "name": name,
                     "importance": importance,
